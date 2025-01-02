@@ -2,7 +2,7 @@ import Link from "next/link"
 import { ArrowRight, Video, Edit, Upload, Youtube, CheckCircle, Users, Zap } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { SignedOut, SignIn, SignInButton } from "@clerk/nextjs"
+import { SignedIn, SignedOut, SignIn, SignInButton } from "@clerk/nextjs"
 
 export default function LandingPage() {
   return (
@@ -12,6 +12,11 @@ export default function LandingPage() {
           <SignedOut>
             <SignInButton />
           </SignedOut>
+          <SignedIn>
+            <Link href="/dashboard">
+            Dashboard
+            </Link>
+          </SignedIn>
         <nav className="ml-auto flex gap-4 sm:gap-6">
           <Link className="text-sm font-medium text-gray-400 hover:text-white transition-colors" href="#">
             Features

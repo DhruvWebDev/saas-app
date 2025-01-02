@@ -1,80 +1,94 @@
-  generator client {
-    provider = "prisma-client-js"
-  }
+generator client {
+  provider = "prisma-client-js"
+}
 
-  datasource db {
-    provider  = "postgresql"
-    url       = env("DATABASE_URL")
-    directUrl = env("DIRECT_URL")
-  }
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
 
-  model User {
-    id            String         @id @default(cuid())
-    email         String         @unique
-    name          String?
-    role          Role           @default(YOUTUBER)
-    createdAt     DateTime       @default(now())
-    updatedAt     DateTime       @updatedAt
-    editors       Editor[]
-    videos        Video[]
-    notifications Notification[]
-    imageUrl      String?
-  }
+model Editor {
+  id           String         @id
+  name         String
+  email        String         @unique
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime
+  userId       String
+  User         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  EditorAccess EditorAccess[]
+  Video        Video[]
+}
 
-  model Editor {
-    id          String          @id @default(cuid())
-    name        String
-    email       String          @unique
-    createdAt   DateTime        @default(now())
-    updatedAt   DateTime        @updatedAt
-    userId      String?
-    user        User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
-    videos      Video[]
-    accessList  EditorAccess[]
-  }
+model EditorAccess {
+  id        String   @id
+  email     String
+  createdAt DateTime @default(now())
+  name      String
+  Editor    Editor   @relation(fields: [email], references: [email], onDelete: Cascade)
+}
 
-  model EditorAccess {
-    id        String   @id @default(cuid())
-    email     String
-    name      String
-    editor    Editor?   @relation(fields: [email], references: [email], onDelete: Cascade)
-    createdAt DateTime @default(now())
-  }
+model Message {
+  id        String   @id @default(uuid())  // Automatically generates a UUID
+  senderId  String
+  receiverId String
+  content   String
+  createdAt DateTime @default(now())
+}
 
-  model Video {
-    id             String       @id @default(cuid())
-    title          String
-    description    String?
-    status         VideoStatus  @default(PENDING)
-    user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-    userId         String
-    editor         Editor?      @relation(fields: [editorId], references: [id], onDelete: SetNull)
-    editorId       String?
-    videoFileUrl   String?
-    youtubeVideoId String?
-    createdAt      DateTime     @default(now())
-    updatedAt      DateTime     @updatedAt
-    thumbnail_url  String?
-  }
 
-  model Notification {
-    id        String    @id @default(cuid())
-    userId    String
-    user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-    message   String
-    read      Boolean   @default(false)
-    createdAt DateTime  @default(now())
-  }
+model Notification {
+  id        String   @id
+  userId    String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
 
-  enum Role {
-    YOUTUBER
-    EDITOR
-  }
+model User {
+  id           String         @id
+  email        String         @unique
+  name         String?
+  role         Role           @default(YOUTUBER)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime
+  imageUrl     String?
+  Editor       Editor[]
+  Notification Notification[]
+  Video        Video[]
+}
 
-  enum VideoStatus {
-    PENDING
-    EDITING
-    AWAITING_APPROVAL
-    APPROVED
-    UPLOADED
-  }
+model Video {
+  id             String      @id
+  title          String
+  description    String?
+  status         VideoStatus @default(PENDING)
+  userId         String
+  editorId       String?
+  videoFileUrl   String?
+  youtubeVideoId String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime
+  thumbnail_url  String?
+  Editor         Editor?     @relation(fields: [editorId], references: [id])
+  User           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum ParticipantType {
+  USER
+  EDITOR
+}
+
+enum Role {
+  YOUTUBER
+  EDITOR
+}
+
+enum VideoStatus {
+  PENDING
+  EDITING
+  AWAITING_APPROVAL
+  APPROVED
+  UPLOADED
+}
