@@ -1,7 +1,12 @@
-import { ThemeProvider } from "./theme-provider";
-import { ClerkProvider } from "@clerk/nextjs";
-import { ReactNode } from "react";
-import { Toaster } from "@/components/ui/toaster"
+'use client';
+
+import { SessionProvider } from 'next-auth/react';
+import { ThemeProvider } from './theme-provider';
+import { ClerkProvider } from '@clerk/nextjs';
+import { ReactNode } from 'react';
+import { Toaster } from '@/components/ui/toaster';
+import Header from './header';
+import Footer from './footer';
 
 interface WrapperProps {
   children: ReactNode;
@@ -9,19 +14,23 @@ interface WrapperProps {
 
 export function Wrapper({ children }: WrapperProps) {
   return (
-    <ClerkProvider
-      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || ""}
-      afterSignOutUrl="/"
-    >
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
+    <SessionProvider>
+      <ClerkProvider
+        publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || ''}
+        afterSignOutUrl="/"
       >
-        {children}
-        <Toaster />
-      </ThemeProvider>
-    </ClerkProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Header />
+          {children}
+          <Footer />
+          <Toaster />
+        </ThemeProvider>
+      </ClerkProvider>
+    </SessionProvider>
   );
 }
