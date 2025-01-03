@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import { YOUTUBE_SCOPES } from '@/lib/auth';
-import { encrypt, decrypt } from '@/lib/encryption';
+import { encrypt, decrypt } from '@/lib/encryptio';
 
 const handler = NextAuth({
   providers: [

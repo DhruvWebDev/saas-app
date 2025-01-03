@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "@/hooks/use-toast"
 import { Youtube, Edit } from 'lucide-react'
-
+import { Boxes } from '@/components/ui/background-boxes'
 export default function OnboardingPage() {
   const [selectedRole, setSelectedRole] = useState<'youtuber' | 'editor' | null>(null)
 
@@ -19,6 +19,7 @@ export default function OnboardingPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-black bg-grid-white/[0.2] relative">
+            <Boxes />
       <div className="absolute inset-0 bg-black/50" aria-hidden="true" />
       <Card className="w-full max-w-md relative z-10 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-purple-600 opacity-20" />

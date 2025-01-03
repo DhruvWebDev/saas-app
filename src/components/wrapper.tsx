@@ -5,8 +5,8 @@ import { ThemeProvider } from './theme-provider';
 import { ClerkProvider } from '@clerk/nextjs';
 import { ReactNode } from 'react';
 import { Toaster } from '@/components/ui/toaster';
-import Header from './header';
-import Footer from './footer';
+import { Navbar } from './header';
+import {Footer} from './footer';
 
 interface WrapperProps {
   children: ReactNode;
@@ -25,7 +25,7 @@ export function Wrapper({ children }: WrapperProps) {
           enableSystem
           disableTransitionOnChange
         >
-          <Header />
+          <Navbar />
           {children}
           <Footer />
           <Toaster />
