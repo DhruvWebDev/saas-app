@@ -9,80 +9,133 @@ datasource db {
 }
 
 model Editor {
-  id           String         @id
+  id           String         @id @default(uuid())
   name         String
   email        String         @unique
   createdAt    DateTime       @default(now())
-  updatedAt    DateTime
-  userId       String
-  User         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt    DateTime       @updatedAt
+  imageUrl     String?
+  isActive     Boolean        @default(true)
+  lastLoginAt  DateTime?
+  deletedAt    DateTime?
   EditorAccess EditorAccess[]
   Video        Video[]
+
+  @@index([email])
 }
 
 model EditorAccess {
-  id        String   @id
-  email     String
-  createdAt DateTime @default(now())
+  id        String       @id @default(uuid())
+  email     String       @unique
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
   name      String
-  Editor    Editor   @relation(fields: [email], references: [email], onDelete: Cascade)
+  userId    String
+  status    AccessStatus @default(ACTIVE)
+  deletedAt DateTime?
+
+  Editor Editor @relation(fields: [email], references: [email], onDelete: Cascade)
+  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([email])
 }
 
 model Message {
-  id        String   @id @default(uuid())  // Automatically generates a UUID
-  senderId  String
+  id         String    @id @default(uuid())
+  content    String    @db.Text
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
   receiverId String
-  content   String
-  createdAt DateTime @default(now())
+  senderId   String
+  read       Boolean   @default(false)
+  deletedAt  DateTime?
+
+  sender   User @relation("SenderMessages", fields: [senderId], references: [id])
+  receiver User @relation("ReceiverMessages", fields: [receiverId], references: [id])
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
 }
 
-
 model Notification {
-  id        String   @id
+  id        String           @id @default(uuid())
   userId    String
-  message   String
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   String           @db.Text
+  type      NotificationType @default(GENERAL)
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  expiresAt DateTime?
+  metadata  Json? // For additional notification data
+
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([read])
 }
 
 model User {
-  id           String         @id
-  email        String         @unique
-  name         String?
-  role         Role           @default(YOUTUBER)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime
-  imageUrl     String?
-  Editor       Editor[]
-  Notification Notification[]
-  Video        Video[]
+  id          String    @id @default(uuid())
+  email       String    @unique
+  name        String?
+  role        Role      @default(YOUTUBER)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  imageUrl    String?
+  handleName  String    @unique
+  isActive    Boolean   @default(true)
+  lastLoginAt DateTime?
+  deletedAt   DateTime?
+  preferences Json? // Store user preferences
+  metadata    Json? // For additional user data
+
+  // Relations
+  Notification    Notification[]
+  Video           Video[]
+  MessageSent     Message[]      @relation("SenderMessages")
+  MessageReceived Message[]      @relation("ReceiverMessages")
+  EditorAccess    EditorAccess[]
+
+  @@index([email])
+  @@index([handleName])
 }
 
 model Video {
-  id             String      @id
-  title          String
-  description    String?
+  id             String      @id @default(uuid())
+  title          String      @db.VarChar(255)
+  description    String?     @db.Text
   status         VideoStatus @default(PENDING)
   userId         String
-  editorId       String?
+  editorId       String
   videoFileUrl   String?
-  youtubeVideoId String?
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime
+  youtubeVideoId String?     @unique
   thumbnail_url  String?
-  Editor         Editor?     @relation(fields: [editorId], references: [id])
-  User           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
+  viewCount      Int         @default(0)
+  duration       Int? // Video duration in seconds
+  visibility     Visibility  @default(PRIVATE)
+  publishedAt    DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  deletedAt      DateTime?
+  metadata       Json? // For additional video data
+  tags           String[] // Array of video tags
 
-enum ParticipantType {
-  USER
-  EDITOR
+  Editor Editor @relation(fields: [editorId], references: [id])
+  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([editorId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 enum Role {
   YOUTUBER
   EDITOR
+  ADMIN
 }
 
 enum VideoStatus {
@@ -91,4 +144,26 @@ enum VideoStatus {
   AWAITING_APPROVAL
   APPROVED
   UPLOADED
+  FAILED
+  ARCHIVED
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+  UNLISTED
+}
+
+enum NotificationType {
+  GENERAL
+  VIDEO_UPDATE
+  MESSAGE
+  ACCESS_REQUEST
+  SYSTEM
+}
+
+enum AccessStatus {
+  ACTIVE
+  SUSPENDED
+  REVOKED
 }

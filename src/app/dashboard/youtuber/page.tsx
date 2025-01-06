@@ -1,3 +1,7 @@
+import { YouTuberDashboard } from "@/components/youtuber-dashboard-sidebar";
+
 export default function Page() {
-  return <h1>Welcome to page!</h1>;
+  return (
+    <YouTuberDashboard />
+  )
 }

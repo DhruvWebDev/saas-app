@@ -1,9 +1,7 @@
 "use client";
-
 import { useState } from "react";
 import { CheckIcon } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -47,9 +45,7 @@ const tiers = [
 
 export default function PricingPage() {
   const [loading, setLoading] = useState<string | null>(null);
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(
-    "monthly"
-  );
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
 
   const handleSubscription = async (stripePriceId: string) => {
     setLoading(stripePriceId);
@@ -59,11 +55,11 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <div className="bg-gray-100 min-h-screen flex flex-col justify-center items-center">
+      <header className="bg-white shadow w-full">
+        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-3xl font-bold text-gray-900">Pricing Plans</h1>
-          <div className="mt-4 flex items-center">
+          <div className="mt-4 flex justify-center space-x-4">
             <span
               className={`cursor-pointer px-3 py-2 rounded-md ${
                 billingCycle === "monthly" ? "bg-blue-500 text-white" : "text-gray-700"
@@ -73,7 +69,7 @@ export default function PricingPage() {
               Monthly
             </span>
             <span
-              className={`cursor-pointer px-3 py-2 rounded-md ml-2 ${
+              className={`cursor-pointer px-3 py-2 rounded-md ${
                 billingCycle === "yearly" ? "bg-blue-500 text-white" : "text-gray-700"
               }`}
               onClick={() => setBillingCycle("yearly")}
@@ -83,59 +79,56 @@ export default function PricingPage() {
           </div>
         </div>
       </header>
-      <main>
+
+      <main className="flex-grow w-full">
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div className="px-4 py-6 sm:px-0">
-            <div className="grid md:grid-cols-2 gap-6">
-              {tiers.map((tier) => (
-                <Card key={tier.id} className="flex flex-col">
-                  <CardHeader>
-                    <CardTitle>{tier.name}</CardTitle>
-                    <CardDescription>{tier.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex-grow">
-                    <p className="text-4xl font-extrabold">
-                      {billingCycle === "monthly"
-                        ? tier.priceMonthly
-                        : tier.priceYearly}
-                    </p>
-                    <p className="text-gray-500">
-                      per {billingCycle === "monthly" ? "month" : "year"}
-                    </p>
-                    <ul className="mt-6 space-y-4">
-                      {tier.features.map((feature) => (
-                        <li key={feature} className="flex items-start">
-                          <div className="flex-shrink-0">
-                            <CheckIcon className="h-6 w-6 text-green-500" />
-                          </div>
-                          <p className="ml-3 text-base text-gray-700">
-                            {feature}
-                          </p>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                  <CardFooter>
-                    <Button
-                      className="w-full"
-                      onClick={() =>
-                        handleSubscription(
-                          billingCycle === "monthly"
-                            ? tier.stripePriceIdMonthly
-                            : tier.stripePriceIdYearly
-                        )
-                      }
-                      disabled={loading === tier.stripePriceIdMonthly || loading === tier.stripePriceIdYearly}
-                    >
-                      {loading === tier.stripePriceIdMonthly ||
-                      loading === tier.stripePriceIdYearly
-                        ? "Processing..."
-                        : `Subscribe to ${tier.name}`}
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
+          <div className="grid md:grid-cols-2 gap-6 justify-center items-center">
+            {tiers.map((tier) => (
+              <Card key={tier.id} className="flex flex-col">
+                <CardHeader>
+                  <CardTitle>{tier.name}</CardTitle>
+                  <CardDescription>{tier.description}</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <p className="text-4xl font-extrabold">
+                    {billingCycle === "monthly"
+                      ? tier.priceMonthly
+                      : tier.priceYearly}
+                  </p>
+                  <p className="text-gray-500">
+                    per {billingCycle === "monthly" ? "month" : "year"}
+                  </p>
+                  <ul className="mt-6 space-y-4">
+                    {tier.features.map((feature) => (
+                      <li key={feature} className="flex items-start">
+                        <div className="flex-shrink-0">
+                          <CheckIcon className="h-6 w-6 text-green-500" />
+                        </div>
+                        <p className="ml-3 text-base text-gray-700">{feature}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+                <CardFooter>
+                  <Button
+                    className="w-full"
+                    onClick={() =>
+                      handleSubscription(
+                        billingCycle === "monthly"
+                          ? tier.stripePriceIdMonthly
+                          : tier.stripePriceIdYearly
+                      )
+                    }
+                    disabled={loading === tier.stripePriceIdMonthly || loading === tier.stripePriceIdYearly}
+                  >
+                    {loading === tier.stripePriceIdMonthly ||
+                    loading === tier.stripePriceIdYearly
+                      ? "Processing..."
+                      : `Subscribe to ${tier.name}`}
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
           </div>
         </div>
       </main>

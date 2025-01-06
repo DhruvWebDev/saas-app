@@ -6,20 +6,62 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "@/hooks/use-toast"
 import { Youtube, Edit } from 'lucide-react'
 import { Boxes } from '@/components/ui/background-boxes'
-export default function OnboardingPage() {
-  const [selectedRole, setSelectedRole] = useState<'youtuber' | 'editor' | null>(null)
+import axios from 'axios'
+import { useUser } from '@clerk/nextjs'
+import { useRouter } from 'next/router'
 
-  const handleSelection = (role: 'youtuber' | 'editor') => {
-    setSelectedRole(role)
-    toast({
-      title: `Welcome, ${role === 'youtuber' ? 'Creator' : 'Editor'}!`,
-      description: `You've chosen to continue as a ${role}. Let's get you set up.`,
-    })
+export default function OnboardingPage() {
+  const router = useRouter();
+  const { user } = useUser()
+  const [selectedRole, setSelectedRole] = useState<'youtuber' | 'editor' | null>(null)
+  const [handleName, setHandleName] = useState<string>('')
+
+  const handleSelection = async (role: 'youtuber' | 'editor') => {
+    if (role === "youtuber" && !handleName) {
+      toast({
+        title: 'Error',
+        description: 'Please enter your YouTube handle.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    // Prepare data for POST request
+    const data = {
+      user_id: user?.id,
+      email: user?.primaryEmailAddress?.emailAddress,
+      name: user?.fullName,
+      handleName: role === 'youtuber' ? handleName : null, // Only send handleName for youtubers
+      imageUrl: user?.imageUrl,
+    }
+
+    try {
+      if (role === 'youtuber') {
+        await axios.post('/api/onboarding-yt', data)
+        router.push("/yt-auth")
+      } else if (role === 'editor') {
+        await axios.post('/api/onboarding-editors', data)
+      }
+
+      setSelectedRole(role)
+
+      toast({
+        title: `Welcome, ${role === 'youtuber' ? 'Creator' : 'Editor'}!`,
+        description: `You've chosen to continue as a ${role}. Let's get you set up.`,
+      })
+
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Something went wrong. Please try again later.',
+        variant: 'destructive',
+      })
+    }
   }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-black bg-grid-white/[0.2] relative">
-            <Boxes />
+      <Boxes />
       <div className="absolute inset-0 bg-black/50" aria-hidden="true" />
       <Card className="w-full max-w-md relative z-10 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-purple-600 opacity-20" />
@@ -41,6 +83,17 @@ export default function OnboardingPage() {
               <span className="text-sm opacity-80">I create and upload content</span>
             </div>
           </Button>
+          {selectedRole === 'youtuber' && (
+            <div className="mt-4">
+              <input
+                type="text"
+                className="w-full p-2 border rounded-md text-black"
+                placeholder="Enter your YouTube handle"
+                value={handleName}
+                onChange={(e) => setHandleName(e.target.value)}
+              />
+            </div>
+          )}
           <Button
             variant={selectedRole === 'editor' ? 'default' : 'outline'}
             className={`h-24 text-lg transition-all ${
@@ -59,4 +112,3 @@ export default function OnboardingPage() {
     </div>
   )
 }
-
