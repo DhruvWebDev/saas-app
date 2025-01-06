@@ -1,30 +1,56 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-export async function GET(req, res) {
-    const { user_id: userId } = req.body; // Assuming userId is passed as a query parameter
+export async function GET(req: Request): Promise<Response> {
+  try {
+    console.log("GET /api/get-videos-by-editor");
 
-    if (!userId) {
-        return res.status(400).json({ error: "User ID (userId) is required." });
+    // Extract query parameters from the request URL
+    const url = new URL(req.url);
+    const editorId = url.searchParams.get("editorId");
+    console.log("Requested Editor ID:", editorId);
+
+    // Validate the editorId parameter
+    if (!editorId) {
+      return new Response(
+        JSON.stringify({ error: "Editor ID is required" }),
+        { status: 400, headers: { "content-type": "application/json" } }
+      );
     }
 
-    try {
-        // Fetch all videos that belong to the user
-        const videos = await prisma.video.findMany({
-            where: {
-                user: userId, // Assuming there's a `userId` field in the video table that links to the user
-            },
-        });
+    // Fetch all videos associated with the given editorId
+    const videos = await prisma.video.findMany({
+      where: {
+        id: editorId, // Fetch all videos for this editorId
+      },
+    });
 
-        // If no videos are found for the user, return a 404 error
-        if (videos.length === 0) {
-            return res.status(404).json({ error: "No videos found for this user." });
-        }
+    console.log("Videos found:", videos);
 
-        // Return the videos data as JSON
-        return res.status(200).json(videos);
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: "Failed to fetch videos for this user." });
+    // If no videos are found, return a 404 error
+    if (!videos || videos.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "No videos found for this editor" }),
+        { status: 404, headers: { "content-type": "application/json" } }
+      );
     }
+
+    // Return the videos data as JSON
+    return new Response(JSON.stringify(videos), {
+      headers: {
+        "content-type": "application/json",
+      },
+    });
+  } catch (error) {
+    console.error("Error retrieving videos:", error);
+
+    // Return a 500 Internal Server Error response with the error details
+    return new Response(
+      JSON.stringify({
+        error: "Internal Server Error",
+        details: error instanceof Error ? error.message : "Unknown error",
+      }),
+      { status: 500, headers: { "content-type": "application/json" } }
+    );
+  }
 }

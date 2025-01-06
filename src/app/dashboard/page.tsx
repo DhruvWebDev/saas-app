@@ -1,28 +1,26 @@
 "use client";
 
-import { EditorDashboard } from '@/components/editor-dashboard-sidebar';
-import { YouTuberDashboard } from '@/components/youtuber-dashboard-sidebar';
+import { useEffect } from 'react';
 import { useUser } from '@clerk/nextjs'; // Assume this hook fetches the user and their role
+import { useRouter } from 'next/navigation';
+
 export default function DashboardPage() {
-  // const { user } = useUser();
-  const user = {
-    unsafeMetadata: {
-      role: 'YOUTUBER'
+  const { user } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user) {
+      if (user.unsafeMetadata.role === 'YOUTUBER') {
+        router.push('/dashboard/youtuber');
+      } else {
+        router.push('/dashboard/editor');
+      }
     }
-  };
+  }, [user, router]);
 
   if (!user) {
     return <div>Loading...</div>;
   }
 
-  return (
-    <>
-      {user.unsafeMetadata.role === 'YOUTUBER' ? (
-        <YouTuberDashboard />
-      ) : (
-        <EditorDashboard />
-      )}
-    </>
-  );
+  return null;
 }
-

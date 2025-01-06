@@ -10,6 +10,7 @@ export async function POST(req, res) {
             data: {
                 email,
                 name,
+                UserId: 
             },
         });
 
